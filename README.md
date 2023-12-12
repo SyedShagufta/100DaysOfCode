@@ -75,7 +75,9 @@ Before you begin, ensure you have the following installed on your machine:
 git clone https://github.com/SyedShagufta/100DaysOfCode.git
 cd 100DaysOfCode
 ```
+## Credits
 
+This course credits go to [Dr. Angela Yu](https://www.appbrewery.co/) of App Brewery. Thank you for providing such a comprehensive and hands-on learning experience!
 
 ### Copyrights ©️
 
