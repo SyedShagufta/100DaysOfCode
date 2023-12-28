@@ -18,15 +18,24 @@ for turtle_index in range(0, 6):
 
 
 def draw_finish_line():
-    tim = Turtle()
-    tim.hideturtle()
+    tim = Turtle("square")
     tim.penup()
+    tim.speed("fastest")
     tim.pencolor("black")
     tim.pensize(5)
-    tim.goto(230, 200)
-    tim.pendown()
-    tim.right(90)
-    tim.forward(400)
+    x = 200
+    y = 180
+    for _ in range(9):
+        tim.goto(x, y)
+        tim.stamp()
+        x += 20
+        y -= 20
+        tim.goto(x, y)
+        tim.stamp()
+        x -= 20
+        y -= 20
+        tim.goto(x, y)
+        tim.stamp()
 
 
 if user_bet:
@@ -42,7 +51,8 @@ while is_race_on:
             is_race_on = False
             winning_turtle = turtle.pencolor()
             if winning_turtle == user_bet:
-                writer.write(f"You Won! The {winning_turtle} turtle is the winner.", False, align="center", font=('Arial', 14, 'normal'))
+                writer.write(f"You Won! The {winning_turtle} turtle is the winner.", False, align="center",
+                             font=('Arial', 14, 'normal'))
                 print(f"You've Won! The {winning_turtle} turtle is the winner.")
                 break
             else:
