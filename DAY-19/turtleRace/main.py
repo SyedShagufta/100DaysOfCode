@@ -33,15 +33,23 @@ if user_bet:
     is_race_on = True
     draw_finish_line()
 
+writer = Turtle()
+writer.hideturtle()
+writer.home()
 while is_race_on:
     for turtle in all_turtles:
         if turtle.xcor() > 230:
             is_race_on = False
             winning_turtle = turtle.pencolor()
             if winning_turtle == user_bet:
+                writer.write(f"You Won! The {winning_turtle} turtle is the winner.", False, align="center", font=('Arial', 14, 'normal'))
                 print(f"You've Won! The {winning_turtle} turtle is the winner.")
+                break
             else:
+                writer.write(f"You've Lost! The {winning_turtle} turtle is the winner.", False, align="center",
+                             font=('Arial', 14, 'normal'))
                 print(f"You've Lost! The {winning_turtle} turtle is the winner.")
+                break
         random_distance = random.randint(0, 10)
         turtle.forward(random_distance)
 
