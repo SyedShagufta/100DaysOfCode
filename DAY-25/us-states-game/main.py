@@ -30,7 +30,7 @@ while len(guessed_state) < 50:
         new_data = pandas.DataFrame(missing_states)
         new_data.to_csv("Learn.csv")
         break
-    if answer_state in states_list:
+    if answer_state in states_list and answer_state not in guessed_state:
         guessed_state.append(answer_state)
         t = turtle.Turtle()
         t.hideturtle()
