@@ -35,6 +35,7 @@ if actual_price < 79990.0:
         msg = MIMEMultipart()
         msg['From'] = my_email
         msg['To'] = "sweetyvox123@gmail.com"
+        msg['Cc'] = "190031562cse@gmail.com"
         msg['Subject'] = "Mail from Automatic Laptop price teller Bot 📩🤖."
         body = f"The price for the below product went down 🔻 \n\n {title} \n\n you can checkout from this link 😉👇 \n\n {url}"
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
