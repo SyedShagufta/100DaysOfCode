@@ -81,4 +81,4 @@ This course credits go to [Dr. Angela Yu](https://www.appbrewery.co/) of App Bre
 
 ### Copyrights ©️
 
-&copy; 2023 Syed Shagufta Noval. All rights reserved.
+&copy; 2024 Syed Shagufta Noval. All rights reserved.
