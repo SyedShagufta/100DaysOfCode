@@ -4,8 +4,8 @@ from selenium.common import ElementClickInterceptedException, NoSuchElementExcep
 from selenium.webdriver.common.by import By
 from selenium.webdriver import Keys
 
-MY_MAIL = "julietsweet725@gmail.com"
-MY_PASSWORD = "julie@2000"
+MY_MAIL = "my_email@gmail.com"
+MY_PASSWORD = "my_pswd"
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_experimental_option("detach", True)
