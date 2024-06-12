@@ -3,7 +3,7 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
-posts = requests.get("https://api.npoint.io/550278d0d7bfa20434a9").json()
+posts = requests.get("https://api.npoint.io/18f49b80c208c8ea9e22").json()
 
 
 @app.route('/')
