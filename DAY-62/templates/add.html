@@ -2,6 +2,8 @@
 <!--Don't forget your import here-->
 {% block title %}Add A New Cafe{% endblock %}
 
+
+
 {% block content %}
 <div class="container">
   <div class="row">
@@ -9,8 +11,68 @@
 
       <h1>Add a new cafe into the database</h1>
 
-      <!-- This is where your WTForm will go -->
+        <br>
 
+      <!-- This is where your WTForm will go -->
+      <form method="post" action="{{ url_for('add_cafe') }}" novalidate>
+          {{ form.csrf_token }}
+          <p>
+            {{form.cafe_name.label}}  <br> <br> {{form.cafe_name(size=100)}}
+            {% for err in form.cafe_name.errors%}
+					<span style="color:red">{{ err }}</span>
+            {% endfor %}
+          </p>
+
+          <p>
+            {{form.cafe_location.label}} <br> <br> {{form.cafe_location(size=100)}}
+            {% for err in form.cafe_location.errors%}
+					<span style="color:red">{{ err }}</span>
+            {% endfor %}
+          </p>
+
+         <p>
+            {{form.opening_time.label}} <br> <br> {{form.opening_time(size=100)}}
+            {% for err in form.opening_time.errors%}
+					<span style="color:red">{{ err }}</span>
+            {% endfor %}
+          </p>
+
+          <p>
+            {{form.closing_time.label}} <br> <br> {{form.closing_time(size=100)}}
+            {% for err in form.closing_time.errors%}
+					<span style="color:red">{{ err }}</span>
+            {% endfor %}
+          </p>
+
+          <p>
+            {{ form.coffee_rating.label }} <br><br>
+            {{ form.coffee_rating(class="select-field") }}
+            {% for err in form.coffee_rating.errors %}
+                <span style="color:red">{{ err }}</span>
+            {% endfor %}
+          </p>
+
+        <p>
+            {{form.wifi_strength_rating.label}}
+            <br> <br>
+            {{form.wifi_strength_rating(class="select-field")}}
+            {% for err in form.wifi_strength_rating.errors%}
+					<span style="color:red">{{ err }}</span>
+            {% endfor %}
+          </p>
+
+        <p>
+            {{form.power_socket_availability.label}} <br> <br> {{form.power_socket_availability(class="select-field")}}
+            {% for err in form.power_socket_availability.errors%}
+					<span style="color:red">{{ err }}</span>
+            {% endfor %}
+          </p>
+
+          <br> <br>
+
+        {{form.submit(class="btn btn-warning btn-lg")}}
+
+      </form>
       
 
 	  <p class="space-above"><a href="{{ url_for('cafes') }}">See all cafes</a></p>
