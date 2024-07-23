@@ -7,11 +7,13 @@
     <title>Edit Rating</title>
 </head>
 <body>
-    <h1>Book Name : {} </h1>
-    <h1>Current Book Rating : {}</h1>
+
     <form action="{{url_for('edit')}}" method="POST">
-      <input name="new_rating" type="text" placeholder="New Rating"/>
-      <button name="rating_submit" type="submit">Change Rating</button>
+        <p>Book Name : {{book.title}} </p>
+        <p>Current Book Rating : {{book.rating}}</p>
+        <input hidden="hidden" name="id" value="{{book.id}}"/>
+        <input name="new_rating" type="text" placeholder="New Rating"/>
+        <button name="rating_submit" type="submit">Change Rating</button>
     </form>
 </body>
 </html>
