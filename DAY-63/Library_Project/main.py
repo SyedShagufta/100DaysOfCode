@@ -47,7 +47,7 @@ def add():
         title = request.form["name"]
         author = request.form["author"]
         rating = request.form["rating"]
-        new_book = Book(title=title, author=author, rating=rating)
+        Book(title=title, author=author, rating=rating)
         db.session.commit()
         return redirect(url_for('home'))
     return render_template('add.html')
