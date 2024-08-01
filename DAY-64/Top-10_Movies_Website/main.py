@@ -8,6 +8,9 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 import requests
 
+SEARCH_URL = "https://www.omdbapi.com/?"
+API_KEY = "YOUR_API_KEY"
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
@@ -17,6 +20,12 @@ class Base(DeclarativeBase):
     pass
 
 
+class EditForm(FlaskForm):
+    new_rating = StringField(label="Your Rating out of 10 e.g. 7.5", validators=[DataRequired()])
+    new_review = StringField(label="Your Review", validators=[DataRequired()])
+    done_btn = SubmitField(label="Done")
+
+
 class AddForm(FlaskForm):
     movie_title = StringField(label="Movie Title", validators=[DataRequired()])
     add_movie = SubmitField(label="Add Movie")
@@ -24,8 +33,8 @@ class AddForm(FlaskForm):
 
 # CREATE DB
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///top-10-website-database.db'
-db = SQLAlchemy(model_class=Base)
-db.init_app(app)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
 
 # CREATE TABLE
@@ -34,9 +43,9 @@ class Movies(db.Model):
     title: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[str] = mapped_column(String(400), nullable=False)
-    rating: Mapped[float] = mapped_column(Float, nullable=False)
-    ranking: Mapped[int] = mapped_column(Integer, nullable=False)
-    review: Mapped[str] = mapped_column(String(400), nullable=False)
+    rating: Mapped[float] = mapped_column(Float, nullable=True)
+    ranking: Mapped[int] = mapped_column(Integer, nullable=True)
+    review: Mapped[str] = mapped_column(String(400), nullable=True)
     img_url: Mapped[str] = mapped_column(String(300), nullable=False)
 
 
@@ -46,22 +55,24 @@ with app.app_context():
 
 @app.route("/")
 def home():
-    result = db.session.execute(db.select(Movies).order_by(desc(Movies.ranking))).scalars()
+    result = db.session.execute(db.select(Movies).order_by(Movies.rating)).scalars().all()
+    for i in range(len(result)):
+        result[i].ranking = len(result) - i
+    db.session.commit()
     return render_template("index.html", movies_list=result)
 
 
 @app.route("/edit", methods=['GET', 'POST'])
 def edit():
-    if request.method == "POST":
-        movie_id = request.form["id"]
-        movie_to_update = db.get_or_404(Movies, movie_id)
-        movie_to_update.rating = request.form["new_rating"]
-        movie_to_update.review = request.form["new_review"]
+    edit_form = EditForm()
+    movie_id = request.args.get("id")
+    movie_to_update = db.get_or_404(Movies, movie_id)
+    if edit_form.validate_on_submit():
+        movie_to_update.rating = float(edit_form.new_rating.data)
+        movie_to_update.review = edit_form.new_review.data
         db.session.commit()
         return redirect(url_for('home'))
-    movie_id = request.args.get('id')
-    movie_selected = db.get_or_404(Movies, movie_id)
-    return render_template('edit.html', movie=movie_selected)
+    return render_template('edit.html', movie=movie_to_update, form=edit_form)
 
 
 @app.route("/delete")
@@ -73,11 +84,27 @@ def delete():
     return redirect(url_for('home'))
 
 
-@app.route("/add")
+@app.route("/add", methods=['GET', 'POST'])
 def add():
     form = AddForm()
     if form.validate_on_submit():
-        print("validated")
+        movie_title = form.movie_title.data
+        response = requests.get(SEARCH_URL, params={"apikey": API_KEY, "t": movie_title})
+        if response.status_code == 200:
+            data = response.json()
+            if data['Response'] == 'True':
+                title = data["Title"]
+                year = data["Year"]
+                description = data["Plot"]
+                img_url = data["Poster"]
+                new_movie = Movies(title=title, year=int(year), description=description, img_url=img_url)
+                db.session.add(new_movie)
+                db.session.commit()
+                return redirect(url_for('edit', id=new_movie.id))
+            else:
+                return render_template('add.html', form=form, error="Movie not found.")
+        else:
+            return render_template('add.html', form=form, error="Failed to fetch movie data.")
     return render_template('add.html', form=form)
 
 
