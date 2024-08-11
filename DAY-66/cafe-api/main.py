@@ -6,6 +6,8 @@ import random
 
 app = Flask(__name__)
 
+actual_api_key = "SofiaTopSecretAPIKey"
+
 
 # CREATE DB
 class Base(DeclarativeBase):
@@ -104,9 +106,39 @@ def post_new_cafe():
     db.session.commit()
     return jsonify(response={"success": "Successfully added the new cafe."})
 
+
 # HTTP PUT/PATCH - Update Record
+@app.route('/update-price/<int:cafe_id>', methods=["PATCH"])
+def patch_new_cafe(cafe_id):
+    new_price = request.args.get("new_price")
+    cafe_to_update = db.session.get(Cafe, cafe_id)
+    if cafe_to_update:
+        cafe_to_update.coffee_price = new_price
+        db.session.commit()
+        return jsonify(response={"success": "Successfully Updated the price of the Cafe."}), 200
+    else:
+        return jsonify(error={
+            "Not Found": "Sorry a Cafe with that id is not found in the database"
+        }), 400
+
 
 # HTTP DELETE - Delete Record
+@app.route('/report-closed/<int:delete_cafe_id>', methods=['DELETE'])
+def delete_cafe(delete_cafe_id):
+    given_api_key = request.args.get("api-key")
+    cafe_to_delete = db.session.get(Cafe, delete_cafe_id)
+    if cafe_to_delete and given_api_key == actual_api_key:
+        db.session.delete(cafe_to_delete)
+        db.session.commit()
+        return jsonify(response={"success": "Successfully Updated the price of the Cafe."}), 200
+    elif given_api_key != actual_api_key:
+        return jsonify(error={
+            "Not Found": "Sorry, you are not authorized to make the request!"
+        }), 400
+    else:
+        return jsonify(error={
+            "Not Found": "Sorry a Cafe with that id is not found in the database!"
+        }), 400
 
 
 if __name__ == '__main__':
