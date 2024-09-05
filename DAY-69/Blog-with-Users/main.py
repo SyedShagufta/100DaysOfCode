@@ -3,14 +3,15 @@ from flask import Flask, abort, render_template, redirect, url_for, flash, reque
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from flask_gravatar import Gravatar
-from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
+from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 # Import your forms from the forms.py
-from forms import CreatePostForm
+from forms import CreatePostForm, RegisterForm, LoginForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -36,6 +37,20 @@ class Base(DeclarativeBase):
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
+
+
+# Create admin-only decorator
+
+def admin_only(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # If id is not 1 then return abort with 403 error
+        if current_user.id != 1:
+            return abort(403)
+        # Otherwise continue with the route function
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 
 # CONFIGURE TABLES
@@ -66,6 +81,7 @@ with app.app_context():
 # TODO: Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    form = RegisterForm()
     if request.method == 'POST':
         email = request.form.get('email')
         # Check for the email in database
@@ -89,18 +105,35 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         # after committing redirect to home page
-        return render_template("index.html")
-    return render_template("register.html")
+        return redirect(url_for('get_all_posts'))
+    return render_template("register.html", form=form)
 
 
 # TODO: Retrieve a user from the database based on their email. 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template("login.html")
+    form = LoginForm()
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        result = db.session.execute(db.select(User).where(User.email == email)).scalar()
+        # if the email doesn't exist or password is wrong
+        if not result:
+            flash("Email doesn't exists, Please try again.")
+            return redirect(url_for('login'))
+        elif not check_password_hash(result.password, password):
+            flash("Password incorrect, Please try again.")
+            return redirect(url_for('login'))
+        else:
+            login_user(result)
+            return redirect(url_for('get_all_posts'))
+    return render_template("login.html", form=form)
 
 
+@login_required
 @app.route('/logout')
 def logout():
+    logout_user()
     return redirect(url_for('get_all_posts'))
 
 
@@ -112,6 +145,7 @@ def get_all_posts():
 
 
 # TODO: Allow logged-in users to comment on posts
+@login_required
 @app.route("/post/<int:post_id>")
 def show_post(post_id):
     requested_post = db.get_or_404(BlogPost, post_id)
@@ -119,6 +153,7 @@ def show_post(post_id):
 
 
 # TODO: Use a decorator so only an admin user can create a new post
+@admin_only
 @app.route("/new-post", methods=["GET", "POST"])
 def add_new_post():
     form = CreatePostForm()
@@ -138,6 +173,7 @@ def add_new_post():
 
 
 # TODO: Use a decorator so only an admin user can edit a post
+@admin_only
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 def edit_post(post_id):
     post = db.get_or_404(BlogPost, post_id)
@@ -160,6 +196,7 @@ def edit_post(post_id):
 
 
 # TODO: Use a decorator so only an admin user can delete a post
+@admin_only
 @app.route("/delete/<int:post_id>")
 def delete_post(post_id):
     post_to_delete = db.get_or_404(BlogPost, post_id)
