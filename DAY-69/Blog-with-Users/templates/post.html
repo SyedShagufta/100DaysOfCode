@@ -1,5 +1,5 @@
 {% include "header.html" %}
-
+{% from "bootstrap5/form.html" import render_form %}
 <!-- Page Header-->
 <header class="masthead" style="background-image: url('{{post.img_url}}')">
   <div class="container position-relative px-4 px-lg-5">
@@ -10,7 +10,7 @@
           <h2 class="subheading">{{ post.subtitle }}</h2>
           <span class="meta"
             >Posted by
-            <a href="#">{{ post.author }}</a>
+            <a href="#">{{ post.author.name }}</a>
             on {{ post.date }}
           </span>
         </div>
@@ -35,6 +35,11 @@
         </div>
         {% endif %}
 
+        {{ckeditor.load()}}
+        <!-- Configure it with the name of the form field from CommentForm -->
+        {{ ckeditor.config(name='comment') }}
+        <!-- Create the wtf quick form from CommentForm -->
+        {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
         <!--           Comments Area -->
         <div class="col-lg-8 col-md-10 mx-auto comment">
           <ul class="commentList">

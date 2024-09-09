@@ -5,13 +5,14 @@ from flask_ckeditor import CKEditor
 from flask_gravatar import Gravatar
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
+from jinja2.nodes import List
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import Integer, String, Text, ForeignKey
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 # Import your forms from the forms.py
-from forms import CreatePostForm, RegisterForm, LoginForm
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -61,17 +62,23 @@ class BlogPost(db.Model):
     subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
     date: Mapped[str] = mapped_column(String(250), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
-    author: Mapped[str] = mapped_column(String(250), nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
+    # creating a foreign key as author id
+    author_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("User.id"))
+    # Create reference to the User object. The "posts" refers to the posts property in the User class.
+    author = relationship("User", back_populates="posts")
 
 
-# TODO: Create a User table for all your registered users. 
+# TODO: Create a User table for all your registered users.
 class User(UserMixin, db.Model):
     __tablename__ = "User"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(250), nullable=False)
     name: Mapped[str] = mapped_column(String(300), nullable=False)
+    # This will act like a List of BlogPost objects attached to each User.
+    # The "author" refers to the author property in the BlogPost class.
+    posts = relationship("BlogPost", back_populates="author")
 
 
 with app.app_context():
@@ -148,8 +155,9 @@ def get_all_posts():
 @login_required
 @app.route("/post/<int:post_id>")
 def show_post(post_id):
+    comment = CommentForm()
     requested_post = db.get_or_404(BlogPost, post_id)
-    return render_template("post.html", post=requested_post)
+    return render_template("post.html", post=requested_post, form=comment)
 
 
 # TODO: Use a decorator so only an admin user can create a new post
